@@ -1,0 +1,38 @@
+log:
+  whitelist:
+    add: "added %s (uuid: %s) to whitelist by %s"
+    remove: "removed %s (uuid: %s) from whitelist by %s"
+    reload: "reload whitelist by %s"
+    toggle: "%s toggle whitelist status to %s"
+  unban: "Player %s (uuid: %s) unbanned by %s"
+command:
+  help:
+    whitelist_toggle: "&3/%s whitelist <on/off> &6- &bToggle whitelist status"
+    whitelist_add: "&3/%s whitelist add <playername> &6- &bAdd player to whitelist"
+    whitelist_remove: "&3/%s whitelist remove <playername> &6- &bRemove player from whitelist"
+    whitelist_reload: "&3/%s whitelist reload &6- &breload whitelist"
+    ban: "&3/%s ban <playername> [reason] &6- &bBan a player"
+    tempban: "&3/%s tempban <playername> <time> [reason] &6- &bTemporarily ban a player"
+    unban: "&3/%s unban <playername> &6- &bUnban a player"
+messages:
+  player_not_found: "&cPlayer %s not found"
+  no_permission: "&cYou do not have permission"
+  whitelist:
+    enable: "Whitelist enabled"
+    disable: "Whitelist disabled"
+    add: "&aAdded %s (uuid: %s) to whitelist"
+    remove: "&aRemoved %s (uuid: %s) from whitelist"
+    already_exists: "&cPlayer %s is already in whitelist"
+    reload: "&awhitelist reloaded"
+  login:
+    whitelist: "&bYou are not whitelisted on this server"
+    banned: "&bYou have been banned.\n &fReason: %s"
+    tempban: "&bYou have been temporarily banned.\n &fReason: %s\n &fEnd in: %s"
+  ban:
+    success: "&aPlayer %s banned "
+    already_banned: "&cPlayer %s is already banned"
+  tempban:
+    time_invalid: "&cTime is invalid"
+  unban:
+    success: "&aPlayer %s unbanned"
+    not_banned: "&cPlayer %s is not banned"
