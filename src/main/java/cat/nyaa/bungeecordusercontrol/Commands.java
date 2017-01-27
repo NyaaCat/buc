@@ -90,8 +90,8 @@ public class Commands extends Command {
                 User user = plugin.userList.getUserByName(name);
                 if (user != null && user.isWhitelisted()) {
                     plugin.userList.removeWhitelist(user.getPlayerUUID());
-                    plugin.getLogger().info(Messages.get("log.whitelist.remove", name, user.getPlayerUUID(), sender.getName()));
-                    sender.sendMessage(Messages.getTextComponent("messages.whitelist.remove", name, user.getPlayerUUID()));
+                    plugin.getLogger().info(Messages.get("log.whitelist.remove", user.getPlayerName(), user.getPlayerUUID(), sender.getName()));
+                    sender.sendMessage(Messages.getTextComponent("messages.whitelist.remove", user.getPlayerName(), user.getPlayerUUID()));
                     plugin.userList.save();
                 } else {
                     sender.sendMessage(Messages.getTextComponent("messages.player_not_found", name));
