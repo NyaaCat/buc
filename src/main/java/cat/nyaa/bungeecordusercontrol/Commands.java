@@ -170,6 +170,37 @@ public class Commands extends Command {
             } else {
                 unbanPlayer(sender, user.getPlayerUUID(), user.getPlayerName());
             }
+        } else if (act.equals("haproxy") && args.length >= 2) {
+            if (args[1].equalsIgnoreCase("on")) {
+                if (!sender.hasPermission("buc.haproxy.toggle")) {
+                    sender.sendMessage(Messages.getTextComponent("messages.no_permission"));
+                    return;
+                }
+                plugin.config.haproxy_enable = true;
+                plugin.getLogger().info(Messages.get("log.haproxy.toggle", sender.getName(), "on"));
+                sender.sendMessage(Messages.getTextComponent("messages.haproxy.enable"));
+                plugin.save();
+            } else if (args[1].equalsIgnoreCase("off")) {
+                if (!sender.hasPermission("buc.haproxy.toggle")) {
+                    sender.sendMessage(Messages.getTextComponent("messages.no_permission"));
+                    return;
+                }
+                plugin.config.haproxy_enable = false;
+                plugin.getLogger().info(Messages.get("log.haproxy.toggle", sender.getName(), "off"));
+                sender.sendMessage(Messages.getTextComponent("messages.haproxy.disable"));
+                plugin.save();
+            } else {
+                printHelp(sender, args);
+            }
+        } else if (act.equals("reload")) {
+            if (!sender.hasPermission("buc.reload")) {
+                sender.sendMessage(Messages.getTextComponent("messages.no_permission"));
+                return;
+            }
+            plugin.config.load();
+            plugin.config.save();
+            plugin.getLogger().info(Messages.get("log.reload", sender.getName()));
+            sender.sendMessage(Messages.getTextComponent("messages.reload"));
         } else {
             printHelp(sender, args);
         }
@@ -191,6 +222,8 @@ public class Commands extends Command {
         sender.sendMessage(Messages.getTextComponent("command.help.ban", plugin.config.buc_command));
         sender.sendMessage(Messages.getTextComponent("command.help.tempban", plugin.config.buc_command));
         sender.sendMessage(Messages.getTextComponent("command.help.unban", plugin.config.buc_command));
+        sender.sendMessage(Messages.getTextComponent("command.help.haproxy_toggle", plugin.config.buc_command));
+        sender.sendMessage(Messages.getTextComponent("command.help.reload", plugin.config.buc_command));
     }
 
     private void banPlayer(CommandSender sender, UUID uuid, String name, String reason) {

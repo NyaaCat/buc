@@ -9,6 +9,7 @@ public class BUC extends net.md_5.bungee.api.plugin.Plugin {
     public UserList userList;
     public Config config;
     public Messages msg;
+    public BungeeProxy bungeeProxy;
 
     @Override
     public void onEnable() {
@@ -25,6 +26,7 @@ public class BUC extends net.md_5.bungee.api.plugin.Plugin {
         this.getProxy().getPluginManager().registerCommand(this, new Commands(this));
         userList.save();
         config.save();
+        bungeeProxy = new BungeeProxy(this);
     }
 
     @Override

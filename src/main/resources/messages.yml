@@ -4,6 +4,9 @@ log:
     remove: "removed %s (uuid: %s) from whitelist by %s"
     reload: "reload whitelist by %s"
     toggle: "%s toggle whitelist status to %s"
+  haproxy:
+    toggle: "%s toggle haproxy status to %s"
+  reload: "reload config by %s"
   unban: "Player %s (uuid: %s) unbanned by %s"
 command:
   help:
@@ -14,6 +17,8 @@ command:
     ban: "&3/%s ban <playername> [reason] &6- &bBan a player"
     tempban: "&3/%s tempban <playername> <time> [reason] &6- &bTemporarily ban a player"
     unban: "&3/%s unban <playername> &6- &bUnban a player"
+    haproxy_toggle: "&3/%s haproxy <on/off> &6- &bToggle haproxy support"
+    reload: "&3/%s reload &6- &breload config"
 messages:
   player_not_found: "&cPlayer %s not found"
   no_permission: "&cYou do not have permission"
@@ -36,3 +41,7 @@ messages:
   unban:
     success: "&aPlayer %s unbanned"
     not_banned: "&cPlayer %s is not banned"
+  haproxy:
+    enable: "haproxy support enabled"
+    disable: "haproxy support disabled"
+  reload: "&aBungeeCordUserControl reloaded"
