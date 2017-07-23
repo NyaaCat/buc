@@ -1,4 +1,4 @@
 name: BungeeCordUserControl
 main: cat.nyaa.bungeecordusercontrol.BUC
-version: 1.0
+version: ${version}
 author: cylin
