@@ -18,8 +18,9 @@
  */
 package cat.nyaa.bungeecordusercontrol;
 
-import io.netty.channel.*;
-import io.netty.handler.codec.haproxy.HAProxyMessage;
+import io.netty.channel.AbstractChannel;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelInitializer;
 import io.netty.handler.codec.haproxy.HAProxyMessageDecoder;
 
 import java.lang.reflect.Field;
@@ -52,19 +53,8 @@ public class BungeeProxy {
                     initChannelMethod.invoke(bungeeChannelInitializer, channel);
                     if (plugin.config.haproxy_enable &&
                             plugin.config.haproxy_address.contains(((InetSocketAddress) channel.remoteAddress()).getAddress().getHostAddress())) {
-                        channel.pipeline().addAfter("timeout", "haproxy-decoder", new HAProxyMessageDecoder() {
-                        });
-                        channel.pipeline().addAfter("haproxy-decoder", "haproxy-handler", new ChannelInboundHandlerAdapter() {
-                            @Override
-                            public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-                                if (msg instanceof HAProxyMessage) {
-                                    HAProxyMessage message = (HAProxyMessage) msg;
-                                    remoteAddressField.set(channel, new InetSocketAddress(message.sourceAddress(), message.sourcePort()));
-                                } else {
-                                    super.channelRead(ctx, msg);
-                                }
-                            }
-                        });
+                        channel.pipeline().addFirst(new HAProxyMessageDecoder());
+                        //https://github.com/SpigotMC/BungeeCord/blob/bd5a7e5b26b698c57e6f99933452bfc0659269f9/proxy/src/main/java/net/md_5/bungee/netty/HandlerBoss.java#L79
                     }
                 }
             });
