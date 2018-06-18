@@ -56,6 +56,7 @@ public class UserList {
     }
 
     public void save() {
+        plugin.lastReload = System.currentTimeMillis();
         userCacheFile = getFile("usercache.json");
         bannedPlayersFile = getFile("banned-players.json");
         whitelistFile = getFile("whitelist.json");
@@ -175,6 +176,7 @@ public class UserList {
 
     public void reloadWhitelist() {
         loadWhitelist();
+        plugin.lastReload = System.currentTimeMillis();
         saveWhitelist();
     }
 

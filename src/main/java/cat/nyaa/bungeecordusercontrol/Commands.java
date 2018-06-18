@@ -197,8 +197,7 @@ public class Commands extends Command {
                 sender.sendMessage(Messages.getTextComponent("messages.no_permission"));
                 return;
             }
-            plugin.config.load();
-            plugin.config.save();
+            plugin.reload();
             plugin.getLogger().info(Messages.get("log.reload", sender.getName()));
             sender.sendMessage(Messages.getTextComponent("messages.reload"));
         } else {

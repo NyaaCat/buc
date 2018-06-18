@@ -16,6 +16,11 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerLogin(LoginEvent event) {
+        if (plugin.isReloading()) {
+            event.setCancelled(true);
+            event.setCancelReason(Messages.getTextComponent("messages.login.reload"));
+            return;
+        }
         UUID uuid = event.getConnection().getUniqueId();
         String name = event.getConnection().getName();
         if (plugin.userList.isEnableWhitelist() && !plugin.userList.isWhitelisted(uuid)) {
@@ -27,7 +32,7 @@ public class PlayerListener implements Listener {
             User user = plugin.userList.getUserByUUID(uuid);
             if (plugin.userList.banExpires(uuid)) {
                 plugin.getLogger().info(user.toString());
-                plugin.getLogger().info(Messages.get("log.unban", name,uuid,"[CONSOLE]"));
+                plugin.getLogger().info(Messages.get("log.unban", name, uuid, "[CONSOLE]"));
                 plugin.userList.unbanUser(user.getPlayerUUID());
             } else if ("".equals(user.getBanExpires()) || user.getBanExpires().equalsIgnoreCase("forever")) {
                 event.setCancelReason(Messages.getTextComponent("messages.login.banned", user.getBanReason()));

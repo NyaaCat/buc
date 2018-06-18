@@ -10,6 +10,9 @@ public class BUC extends net.md_5.bungee.api.plugin.Plugin {
     public Config config;
     public Messages msg;
     public BungeeProxy bungeeProxy;
+    public boolean reloading = false;
+    public Long lastReload = 0L;
+    public FileWatcher fileWatcher;
 
     @Override
     public void onEnable() {
@@ -27,6 +30,8 @@ public class BUC extends net.md_5.bungee.api.plugin.Plugin {
         userList.save();
         config.save();
         bungeeProxy = new BungeeProxy(this);
+        lastReload = System.currentTimeMillis();
+        fileWatcher = new FileWatcher(this);
     }
 
     @Override
@@ -44,8 +49,23 @@ public class BUC extends net.md_5.bungee.api.plugin.Plugin {
         }
     }
 
-    public void save() {
+    public synchronized void save() {
+        lastReload = System.currentTimeMillis();
         config.save();
         userList.save();
+    }
+
+    public synchronized void reload() {
+        reloading = true;
+        Messages.load();
+        config.load();
+        userList.load();
+        getProxy().getPluginManager().registerCommand(this, new Commands(this));
+        reloading = false;
+        getLogger().info(Messages.get("messages.reload"));
+    }
+
+    public synchronized boolean isReloading() {
+        return reloading;
     }
 }
