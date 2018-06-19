@@ -42,7 +42,6 @@ public class FileWatcher extends Thread {
                         e.printStackTrace();
                     }
                     plugin.reload();
-                    plugin.getLogger().info(Messages.get("messages.reload"));
                 }
             } else {
                 break;
