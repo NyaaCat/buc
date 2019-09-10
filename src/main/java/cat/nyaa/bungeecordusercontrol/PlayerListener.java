@@ -1,31 +1,30 @@
 package cat.nyaa.bungeecordusercontrol;
 
 
-import net.md_5.bungee.api.event.LoginEvent;
-import net.md_5.bungee.api.plugin.Listener;
-import net.md_5.bungee.event.EventHandler;
+import com.velocitypowered.api.event.ResultedEvent;
+import com.velocitypowered.api.event.Subscribe;
+import com.velocitypowered.api.event.connection.LoginEvent;
+import net.kyori.text.TextComponent;
 
 import java.util.UUID;
 
-public class PlayerListener implements Listener {
+public class PlayerListener {
     private BUC plugin;
 
     public PlayerListener(BUC pl) {
         plugin = pl;
     }
 
-    @EventHandler
+    @Subscribe
     public void onPlayerLogin(LoginEvent event) {
         if (plugin.isReloading()) {
-            event.setCancelled(true);
-            event.setCancelReason(Messages.getTextComponent("messages.login.reload"));
+            event.setResult(ResultedEvent.ComponentResult.denied(TextComponent.of(Messages.get("messages.login.reload"))));
             return;
         }
-        UUID uuid = event.getConnection().getUniqueId();
-        String name = event.getConnection().getName();
+        UUID uuid = event.getPlayer().getUniqueId();
+        String name = event.getPlayer().getUsername();
         if (plugin.userList.isEnableWhitelist() && !plugin.userList.isWhitelisted(uuid)) {
-            event.setCancelReason(Messages.getTextComponent("messages.login.whitelist"));
-            event.setCancelled(true);
+            event.setResult(ResultedEvent.ComponentResult.denied(TextComponent.of(Messages.get("messages.login.whitelist"))));
             return;
         }
         if (plugin.userList.isBanned(uuid)) {
@@ -35,11 +34,9 @@ public class PlayerListener implements Listener {
                 plugin.getLogger().info(Messages.get("log.unban", name, uuid, "[CONSOLE]"));
                 plugin.userList.unbanUser(user.getPlayerUUID());
             } else if ("".equals(user.getBanExpires()) || user.getBanExpires().equalsIgnoreCase("forever")) {
-                event.setCancelReason(Messages.getTextComponent("messages.login.banned", user.getBanReason()));
-                event.setCancelled(true);
+                event.setResult(ResultedEvent.ComponentResult.denied(TextComponent.of(Messages.get("messages.login.banned", user.getBanReason()))));
             } else {
-                event.setCancelReason(Messages.getTextComponent("messages.login.tempban", user.getBanReason(), user.getBanExpires()));
-                event.setCancelled(true);
+                event.setResult(ResultedEvent.ComponentResult.denied(TextComponent.of(Messages.get("messages.login.tempban", user.getBanReason(), user.getBanExpires()))));
             }
             return;
         }

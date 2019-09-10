@@ -1,22 +1,26 @@
 package cat.nyaa.bungeecordusercontrol;
 
 
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.CommandSender;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.plugin.Command;
+import com.google.common.collect.ImmutableList;
+import com.velocitypowered.api.command.Command;
+import com.velocitypowered.api.command.CommandSource;
+import com.velocitypowered.api.plugin.PluginContainer;
+import com.velocitypowered.api.proxy.Player;
+import net.kyori.text.TextComponent;
+import net.kyori.text.format.TextColor;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
-import java.util.Date;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
-public class Commands extends Command {
+public class Commands implements Command {
     private BUC plugin;
 
 
     public Commands(BUC pl) {
-        super(pl.config.buc_command);
+        super();
         plugin = pl;
     }
 
@@ -27,7 +31,7 @@ public class Commands extends Command {
      * @param args   arguments used to invoke this command
      */
     @Override
-    public void execute(CommandSender sender, String[] args) {
+    public void execute(@NonNull CommandSource sender, String[] args) {
         String act = (args.length == 0 ? "help" : args[0].toLowerCase());
         if (act.equals("help")) {
             printHelp(sender, args);
@@ -38,7 +42,7 @@ public class Commands extends Command {
                     return;
                 }
                 plugin.userList.setEnableWhitelist(true);
-                plugin.getLogger().info(Messages.get("log.whitelist.toggle", sender.getName(), "on"));
+                plugin.getLogger().info(Messages.get("log.whitelist.toggle", getSenderName(sender), "on"));
                 sender.sendMessage(Messages.getTextComponent("messages.whitelist.enable"));
                 plugin.save();
             } else if (args[1].equalsIgnoreCase("off")) {
@@ -47,7 +51,7 @@ public class Commands extends Command {
                     return;
                 }
                 plugin.userList.setEnableWhitelist(false);
-                plugin.getLogger().info(Messages.get("log.whitelist.toggle", sender.getName(), "off"));
+                plugin.getLogger().info(Messages.get("log.whitelist.toggle", getSenderName(sender), "off"));
                 sender.sendMessage(Messages.getTextComponent("messages.whitelist.disable"));
                 plugin.save();
             } else if (args[1].equalsIgnoreCase("reload")) {
@@ -55,7 +59,7 @@ public class Commands extends Command {
                     sender.sendMessage(Messages.getTextComponent("messages.no_permission"));
                     return;
                 }
-                plugin.getLogger().info(Messages.get("log.whitelist.reload", sender.getName()));
+                plugin.getLogger().info(Messages.get("log.whitelist.reload", getSenderName(sender)));
                 sender.sendMessage(Messages.getTextComponent("messages.whitelist.reload"));
                 plugin.userList.reloadWhitelist();
             } else if (args[1].equalsIgnoreCase("add") && args.length == 3) {
@@ -90,7 +94,7 @@ public class Commands extends Command {
                 User user = plugin.userList.getUserByName(name);
                 if (user != null && user.isWhitelisted()) {
                     plugin.userList.removeWhitelist(user.getPlayerUUID());
-                    plugin.getLogger().info(Messages.get("log.whitelist.remove", user.getPlayerName(), user.getPlayerUUID(), sender.getName()));
+                    plugin.getLogger().info(Messages.get("log.whitelist.remove", user.getPlayerName(), user.getPlayerUUID(), getSenderName(sender)));
                     sender.sendMessage(Messages.getTextComponent("messages.whitelist.remove", user.getPlayerName(), user.getPlayerUUID()));
                     plugin.userList.save();
                 } else {
@@ -170,50 +174,24 @@ public class Commands extends Command {
             } else {
                 unbanPlayer(sender, user.getPlayerUUID(), user.getPlayerName());
             }
-        } else if (act.equals("haproxy") && args.length >= 2) {
-            if (args[1].equalsIgnoreCase("on")) {
-                if (!sender.hasPermission("buc.haproxy.toggle")) {
-                    sender.sendMessage(Messages.getTextComponent("messages.no_permission"));
-                    return;
-                }
-                plugin.config.haproxy_enable = true;
-                plugin.getLogger().info(Messages.get("log.haproxy.toggle", sender.getName(), "on"));
-                sender.sendMessage(Messages.getTextComponent("messages.haproxy.enable"));
-                plugin.save();
-            } else if (args[1].equalsIgnoreCase("off")) {
-                if (!sender.hasPermission("buc.haproxy.toggle")) {
-                    sender.sendMessage(Messages.getTextComponent("messages.no_permission"));
-                    return;
-                }
-                plugin.config.haproxy_enable = false;
-                plugin.getLogger().info(Messages.get("log.haproxy.toggle", sender.getName(), "off"));
-                sender.sendMessage(Messages.getTextComponent("messages.haproxy.disable"));
-                plugin.save();
-            } else {
-                printHelp(sender, args);
-            }
         } else if (act.equals("reload")) {
             if (!sender.hasPermission("buc.reload")) {
                 sender.sendMessage(Messages.getTextComponent("messages.no_permission"));
                 return;
             }
             plugin.reload();
-            plugin.getLogger().info(Messages.get("log.reload", sender.getName()));
+            plugin.getLogger().info(Messages.get("log.reload", getSenderName(sender)));
             sender.sendMessage(Messages.getTextComponent("messages.reload"));
         } else {
             printHelp(sender, args);
         }
     }
 
-    public void printHelp(CommandSender sender, String[] args) {
-        TextComponent msg = new TextComponent();
-        msg.addExtra("--------- ");
-        msg.addExtra(plugin.getDescription().getName());
-        msg.addExtra(" ");
-        msg.addExtra(plugin.getDescription().getVersion());
-        msg.addExtra(" ---------");
-        msg.setColor(ChatColor.AQUA);
-        sender.sendMessage(msg);
+    public void printHelp(CommandSource sender, String[] args) {
+        Optional<PluginContainer> buc = plugin.server.getPluginManager().getPlugin("buc");
+        if (buc.isPresent()) {
+            sender.sendMessage(TextComponent.of("--------- buc " + buc.get().getDescription().getVersion().get() + " ---------").color(TextColor.AQUA));
+        }
         sender.sendMessage(Messages.getTextComponent("command.help.whitelist_toggle", plugin.config.buc_command));
         sender.sendMessage(Messages.getTextComponent("command.help.whitelist_add", plugin.config.buc_command));
         sender.sendMessage(Messages.getTextComponent("command.help.whitelist_remove", plugin.config.buc_command));
@@ -221,14 +199,13 @@ public class Commands extends Command {
         sender.sendMessage(Messages.getTextComponent("command.help.ban", plugin.config.buc_command));
         sender.sendMessage(Messages.getTextComponent("command.help.tempban", plugin.config.buc_command));
         sender.sendMessage(Messages.getTextComponent("command.help.unban", plugin.config.buc_command));
-        sender.sendMessage(Messages.getTextComponent("command.help.haproxy_toggle", plugin.config.buc_command));
         sender.sendMessage(Messages.getTextComponent("command.help.reload", plugin.config.buc_command));
     }
 
-    private void banPlayer(CommandSender sender, UUID uuid, String name, String reason) {
+    private void banPlayer(CommandSource sender, UUID uuid, String name, String reason) {
         if (!plugin.userList.isBanned(uuid)) {
             plugin.userList.banUser(uuid, name, UserList.FORMAT.format(new Date()),
-                    sender.getName(), "forever", reason);
+                    getSenderName(sender), "forever", reason);
             plugin.getLogger().info(plugin.userList.getUserByUUID(uuid).toString());
             plugin.kickPlayer(uuid, Messages.getTextComponent("messages.login.banned", reason));
             sender.sendMessage(Messages.getTextComponent("messages.ban.success", name, uuid.toString()));
@@ -238,7 +215,7 @@ public class Commands extends Command {
         }
     }
 
-    private void tempbanPlayer(CommandSender sender, UUID uuid, String name, String reason, String banTime) {
+    private void tempbanPlayer(CommandSource sender, UUID uuid, String name, String reason, String banTime) {
         if (!plugin.userList.isBanned(uuid)) {
             Date date = stringToDate(banTime);
             if (date == null || date.before(new Date())) {
@@ -246,7 +223,7 @@ public class Commands extends Command {
                 return;
             }
             plugin.userList.banUser(uuid, name, UserList.FORMAT.format(new Date()),
-                    sender.getName(), UserList.FORMAT.format(date), reason);
+                    getSenderName(sender), UserList.FORMAT.format(date), reason);
             plugin.getLogger().info(plugin.userList.getUserByUUID(uuid).toString());
             plugin.kickPlayer(uuid, Messages.getTextComponent("messages.login.tempban", reason, UserList.FORMAT.format(date)));
             sender.sendMessage(Messages.getTextComponent("messages.ban.success", name, uuid.toString()));
@@ -256,11 +233,11 @@ public class Commands extends Command {
         }
     }
 
-    private void unbanPlayer(CommandSender sender, UUID uuid, String name) {
+    private void unbanPlayer(CommandSource sender, UUID uuid, String name) {
         if (plugin.userList.isBanned(uuid)) {
             User user = plugin.userList.getUserByUUID(uuid);
             plugin.getLogger().info(user.toString());
-            plugin.getLogger().info(Messages.get("log.unban", name, uuid, sender.getName()));
+            plugin.getLogger().info(Messages.get("log.unban", name, uuid, getSenderName(sender)));
             plugin.userList.unbanUser(user.getPlayerUUID());
             sender.sendMessage(Messages.getTextComponent("messages.unban.success", name));
             plugin.userList.save();
@@ -269,10 +246,10 @@ public class Commands extends Command {
         }
     }
 
-    private boolean addWhitelist(CommandSender sender, UUID uuid, String name) {
+    private boolean addWhitelist(CommandSource sender, UUID uuid, String name) {
         if (!plugin.userList.isWhitelisted(uuid)) {
             plugin.userList.addWhitelist(uuid, name);
-            plugin.getLogger().info(Messages.get("log.whitelist.add", name, uuid, sender.getName()));
+            plugin.getLogger().info(Messages.get("log.whitelist.add", name, uuid, getSenderName(sender)));
             sender.sendMessage(Messages.getTextComponent("messages.whitelist.add", name, uuid));
             plugin.userList.save();
             return true;
@@ -320,6 +297,24 @@ public class Commands extends Command {
         } catch (NumberFormatException e) {
             //e.printStackTrace();
             return null;
+        }
+    }
+
+    public String getSenderName(CommandSource sender) {
+        return (sender instanceof Player) ? ((Player) sender).getUsername() : "[CONSOLE]";
+    }
+
+    @Override
+    public List<String> suggest(@NonNull CommandSource source, String[] currentArgs) {
+        List<String> subCommands = Arrays.asList("help", "reload", "whitelist", "ban", "tempban", "unban");
+        if (currentArgs.length == 0) {
+            return subCommands;
+        } else if (currentArgs.length == 1) {
+            return subCommands.stream()
+                    .filter(name -> name.regionMatches(true, 0, currentArgs[0], 0, currentArgs[0].length()))
+                    .collect(Collectors.toList());
+        } else {
+            return ImmutableList.of();
         }
     }
 }
