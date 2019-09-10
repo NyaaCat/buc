@@ -32,10 +32,10 @@ public class FileWatcher extends Thread {
                 e.printStackTrace();
             }
             if (watchKey != null) {
+                watchKey.pollEvents();
                 if (System.currentTimeMillis() - plugin.lastReload > 5000) {
                     plugin.lastReload = System.currentTimeMillis();
                     plugin.getLogger().info("reloading...");
-                    watchKey.pollEvents();
                     try {
                         sleep(1000L);
                     } catch (InterruptedException e) {
