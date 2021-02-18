@@ -19,6 +19,8 @@ command:
     unban: "&3/%s unban <playername> &6- &bUnban a player"
     haproxy_toggle: "&3/%s haproxy <on/off> &6- &bToggle haproxy support"
     reload: "&3/%s reload &6- &breload config"
+    shadowban: "&3/%s shadowban <playername> &b- ban a player without message"
+    unshadowban: "&3/%s unshadowban <playername> &b- unshadowban a player"
 messages:
   player_not_found: "&cPlayer %s not found"
   no_permission: "&cYou do not have permission"
@@ -46,3 +48,10 @@ messages:
     enable: "haproxy support enabled"
     disable: "haproxy support disabled"
   reload: "&aBungeeCordUserControl reloaded"
+  mojang_fail: "Error occurred while contacting login servers, are they down?"
+  shadowban:
+    success: "&asuccessfully shadowBaned Player %s with uuid {%s}"
+    already_shadowbaned: "&cPlayer %s with uuid {%s} is already shadowBaned"
+  unshadowban:
+    success: "&asuccessfully unshadowBaned Player %s with uuid {%s}"
+    not_shadowbaned: "&cPlayer %s with uuid {%s} is not shadowBaned"

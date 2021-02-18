@@ -13,6 +13,7 @@ public class User {
     private String banSource = "";
     private String banExpires = "";
     private String banReason = "";
+    private boolean shadowBaned = false;
 
     public User(UUID uuid) {
         playerUUID = uuid;
@@ -102,6 +103,14 @@ public class User {
         this.banned = banned;
     }
 
+    public boolean isShadowBaned() {
+        return shadowBaned;
+    }
+
+    public void setShadowBaned(boolean shadowed){
+        this.shadowBaned = shadowed;
+    }
+
     @Override
     public String toString() {
         String str = "User{";
@@ -110,6 +119,7 @@ public class User {
         str += ", cacheExpires=" + getCacheExpires();
         str += ", whitelisted=" + isWhitelisted();
         str += ", banned=" + isBanned();
+        str += ", shadowBaned=" + isShadowBaned();
         if (isBanned()) {
             str += ", banCreated=" + getBanCreated();
             str += ", banSource=" + getBanSource();

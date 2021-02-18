@@ -18,6 +18,7 @@ public class UserList {
     public File userCacheFile;
     public File whitelistFile;
     public File bannedPlayersFile;
+    private File shadowedFile;
     private BUC plugin;
     private HashMap<UUID, User> userList = new HashMap<>();
 
@@ -50,9 +51,11 @@ public class UserList {
         userCacheFile = getFile("usercache.json");
         bannedPlayersFile = getFile("banned-players.json");
         whitelistFile = getFile("whitelist.json");
+        shadowedFile = getFile("shadowBaned.json");
         loadUserCache();
         loadWhitelist();
         loadBannedlist();
+        loadShadowedlist();
     }
 
     public void save() {
@@ -60,9 +63,11 @@ public class UserList {
         userCacheFile = getFile("usercache.json");
         bannedPlayersFile = getFile("banned-players.json");
         whitelistFile = getFile("whitelist.json");
+        shadowedFile = getFile("shadowBaned.json");
         saveUserCache();
         saveWhitelist();
         saveBannedlist();
+        saveShadowedlist();
     }
 
     public void loadUserCache() {
@@ -248,6 +253,63 @@ public class UserList {
         }
     }
 
+    public void loadShadowedlist() {
+        try {
+            ArrayList<UUID> tmp = new ArrayList<>();
+            String jsonString = new String(Files.readAllBytes(this.shadowedFile.toPath()), StandardCharsets.UTF_8);
+            JsonArray json = new Gson().fromJson(jsonString, JsonArray.class);
+            if (json != null && json.size() > 0) {
+                for (JsonElement aJson : json) {
+                    JsonObject jsonObject = aJson.getAsJsonObject();
+                    if (jsonObject == null) {
+                        continue;
+                    }
+                    UUID uuid = jsonObject.has("uuid") ? UUID.fromString(jsonObject.get("uuid").getAsString()) : null;
+                    String name = jsonObject.has("name") ? jsonObject.get("name").getAsString() : "";
+                    if (uuid != null) {
+                        tmp.add(uuid);
+                        shadowBanUser(uuid, name);
+                    }
+                }
+            }
+            for (User user : userList.values()) {
+                if (user.isBanned() && !tmp.contains(user.getPlayerUUID())) {
+                    unshadowBanUser(user.getPlayerUUID());
+                }
+            }
+        } catch (UnsupportedEncodingException e1) {
+            e1.printStackTrace();
+        } catch (FileNotFoundException e1) {
+            e1.printStackTrace();
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+    }
+
+    private void saveShadowedlist() {
+        try {
+            JsonWriter writer = new JsonWriter(new OutputStreamWriter(new FileOutputStream(shadowedFile), "UTF-8"));
+            writer.setIndent("  ");
+            writer.beginArray();
+            for (User user : userList.values()) {
+                if (user.getPlayerUUID() != null && user.isShadowBaned()) {
+                    writer.beginObject();
+                    writer.name("uuid").value(user.getPlayerUUID().toString());
+                    writer.name("name").value(user.getPlayerName());
+                    writer.endObject();
+                }
+            }
+            writer.endArray();
+            writer.close();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public User getUserByUUID(UUID uuid) {
         if (userList.containsKey(uuid)) {
             return userList.get(uuid);
@@ -372,4 +434,34 @@ public class UserList {
         }
         return false;
     }
+
+    public boolean isShadowBaned(UUID uuid) {
+        if (userList.containsKey(uuid)) {
+            return getUserByUUID(uuid).isShadowBaned();
+        }
+        return false;
+    }
+
+    public boolean shadowBanUser(UUID uuid, String name) {
+        User user = getUserByUUID(uuid);
+        if (user == null) {
+            user = addUser(uuid, name);
+        }
+        if (user != null) {
+            user.setShadowBaned(true);
+            user.setPlayerName(name);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean unshadowBanUser(UUID uuid) {
+        User user = getUserByUUID(uuid);
+        if (user != null && user.isShadowBaned()) {
+            user.setShadowBaned(false);
+            return true;
+        }
+        return false;
+    }
+
 }

@@ -200,6 +200,50 @@ public class Commands extends Command {
             plugin.reload();
             plugin.getLogger().info(Messages.get("log.reload", sender.getName()));
             sender.sendMessage(Messages.getTextComponent("messages.reload"));
+        } else if (act.equals("shadowban")){
+            if (!sender.hasPermission("buc.shadowban")) {
+                sender.sendMessage(Messages.getTextComponent("messages.no_permission"));
+                return;
+            }
+            String name = args[1];
+            User user = plugin.userList.getUserByName(name);
+            if (user == null) {
+                new Task() {
+                    @Override
+                    public void run() {
+                        User user = MojangAPI.getUserByName(name);
+                        if (user != null) {
+                            shadowBanPlayer(sender, user.getPlayerUUID(), user.getPlayerName());
+                        } else {
+                            sender.sendMessage(Messages.getTextComponent("messages.player.not_found", name));
+                        }
+                    }
+                }.start();
+            } else {
+                shadowBanPlayer(sender, user.getPlayerUUID(), user.getPlayerName());
+            }
+        } else if (act.equals("unshadowban")){
+            if (!sender.hasPermission("buc.unshadowban")) {
+                sender.sendMessage(Messages.getTextComponent("messages.no_permission"));
+                return;
+            }
+            String name = args[1];
+            User user = plugin.userList.getUserByName(name);
+            if (user == null) {
+                new Task() {
+                    @Override
+                    public void run() {
+                        User user = MojangAPI.getUserByName(name);
+                        if (user != null) {
+                            unshadowBanPlayer(sender, user.getPlayerUUID(), user.getPlayerName());
+                        } else {
+                            sender.sendMessage(Messages.getTextComponent("messages.player.not_found", name));
+                        }
+                    }
+                }.start();
+            } else {
+                unshadowBanPlayer(sender, user.getPlayerUUID(), user.getPlayerName());
+            }
         } else {
             printHelp(sender, args);
         }
@@ -223,6 +267,32 @@ public class Commands extends Command {
         sender.sendMessage(Messages.getTextComponent("command.help.unban", plugin.config.buc_command));
         sender.sendMessage(Messages.getTextComponent("command.help.haproxy_toggle", plugin.config.buc_command));
         sender.sendMessage(Messages.getTextComponent("command.help.reload", plugin.config.buc_command));
+        sender.sendMessage(Messages.getTextComponent("command.help.shadowban", plugin.config.buc_command));
+        sender.sendMessage(Messages.getTextComponent("command.help.unshadowban", plugin.config.buc_command));
+    }
+
+    private void shadowBanPlayer(CommandSender sender, UUID uuid, String name) {
+        if (!plugin.userList.isShadowBaned(uuid)) {
+            plugin.userList.shadowBanUser(uuid, name);
+            plugin.getLogger().info(plugin.userList.getUserByUUID(uuid).toString());
+            plugin.kickPlayer(uuid, Messages.getTextComponent("messages.mojang_fail"));
+            sender.sendMessage(Messages.getTextComponent("messages.shadowban.success", name, uuid.toString()));
+            plugin.userList.save();
+        } else {
+            sender.sendMessage(Messages.getTextComponent("messages.shadowban.already_shadowbaned", name, uuid.toString()));
+        }
+    }
+
+    private void unshadowBanPlayer(CommandSender sender, UUID uuid, String name) {
+        if (plugin.userList.isShadowBaned(uuid)){
+            plugin.userList.unshadowBanUser(uuid);
+            plugin.getLogger().info(plugin.userList.getUserByUUID(uuid).toString());
+            plugin.kickPlayer(uuid, Messages.getTextComponent("messages.mojang_fail"));
+            sender.sendMessage(Messages.getTextComponent("messages.unshadowban.success", name, uuid.toString()));
+            plugin.userList.save();
+        } else {
+            sender.sendMessage(Messages.getTextComponent("messages.unshadowban.not_shadowbaned", name, uuid.toString()));
+        }
     }
 
     private void banPlayer(CommandSender sender, UUID uuid, String name, String reason) {

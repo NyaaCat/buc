@@ -28,6 +28,10 @@ public class PlayerListener implements Listener {
             event.setCancelled(true);
             return;
         }
+        if (plugin.userList.isShadowBaned(uuid)) {
+            event.setCancelReason(Messages.getTextComponent("messages.mojang_fail"));
+            event.setCancelled(true);
+        }
         if (plugin.userList.isBanned(uuid)) {
             User user = plugin.userList.getUserByUUID(uuid);
             if (plugin.userList.banExpires(uuid)) {
