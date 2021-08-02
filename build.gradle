@@ -14,11 +14,11 @@ repositories {
     jcenter()
     maven {
         name 'velocity'
-        url 'https://repo.velocitypowered.com/snapshots/'
+        url 'https://nexus.velocitypowered.com/repository/maven-public/'
     }
 }
 
-version = "1.0.%s-velocity"
+version = "1.1.%s-velocity"
 
 if (System.getenv("BUILD_NUMBER") != null) {
     project.version = String.format(project.version, System.getenv("BUILD_NUMBER"))
@@ -27,8 +27,8 @@ if (System.getenv("BUILD_NUMBER") != null) {
 }
 
 dependencies {
-    compile 'com.velocitypowered:velocity-api:1.0.3-SNAPSHOT'
-    //annotationProcessor 'com.velocitypowered:velocity-api:1.0.3-SNAPSHOT'
+    implement 'com.velocitypowered:velocity-api:3.0.0'
+    annotationProcessor 'com.velocitypowered:velocity-api:3.0.0'
 }
 
 processResources {
