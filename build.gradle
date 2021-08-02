@@ -31,8 +31,8 @@ if (System.getenv("TRAVIS_BUILD_NUMBER") != null) {
 }
 
 dependencies {
-    compile 'net.md-5:bungeecord-api:1.17-SNAPSHOT'
-    compile 'io.netty:netty-codec-haproxy:4.1.30.Final'
+    compileOnly 'net.md-5:bungeecord-api:1.17-R0.1-SNAPSHOT'
+    compileOnly 'io.netty:netty-codec-haproxy:4.1.30.Final'
 }
 
 processResources {
