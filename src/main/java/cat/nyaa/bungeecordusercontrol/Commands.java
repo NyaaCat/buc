@@ -4,10 +4,11 @@ package cat.nyaa.bungeecordusercontrol;
 import com.google.common.collect.ImmutableList;
 import com.velocitypowered.api.command.Command;
 import com.velocitypowered.api.command.CommandSource;
+import com.velocitypowered.api.command.SimpleCommand;
 import com.velocitypowered.api.plugin.PluginContainer;
 import com.velocitypowered.api.proxy.Player;
-import net.kyori.text.TextComponent;
-import net.kyori.text.format.TextColor;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.*;
@@ -15,7 +16,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public class Commands implements Command {
+public class Commands implements SimpleCommand {
     private BUC plugin;
 
 
@@ -24,47 +25,44 @@ public class Commands implements Command {
         plugin = pl;
     }
 
-    /**
-     * Execute this command with the specified sender and arguments.
-     *
-     * @param sender the executor of this command
-     * @param args   arguments used to invoke this command
-     */
     @Override
-    public void execute(@NonNull CommandSource sender, String[] args) {
+    public void execute(final Invocation invocation) {
+        CommandSource source = invocation.source();
+        // Get the arguments after the command alias
+        String[] args = invocation.arguments();
         String act = (args.length == 0 ? "help" : args[0].toLowerCase());
         if (act.equals("help")) {
-            printHelp(sender, args);
+            printHelp(source, args);
         } else if (act.equals("whitelist") && args.length >= 2) {
             if (args[1].equalsIgnoreCase("on")) {
-                if (!sender.hasPermission("buc.whitelist.toggle")) {
-                    sender.sendMessage(Messages.getTextComponent("messages.no_permission"));
+                if (!source.hasPermission("buc.whitelist.toggle")) {
+                    source.sendMessage(Messages.getTextComponent("messages.no_permission"));
                     return;
                 }
                 plugin.userList.setEnableWhitelist(true);
-                plugin.getLogger().info(Messages.get("log.whitelist.toggle", getSenderName(sender), "on"));
-                sender.sendMessage(Messages.getTextComponent("messages.whitelist.enable"));
+                plugin.getLogger().info(Messages.get("log.whitelist.toggle", getSenderName(source), "on"));
+                source.sendMessage(Messages.getTextComponent("messages.whitelist.enable"));
                 plugin.save();
             } else if (args[1].equalsIgnoreCase("off")) {
-                if (!sender.hasPermission("buc.whitelist.toggle")) {
-                    sender.sendMessage(Messages.getTextComponent("messages.no_permission"));
+                if (!source.hasPermission("buc.whitelist.toggle")) {
+                    source.sendMessage(Messages.getTextComponent("messages.no_permission"));
                     return;
                 }
                 plugin.userList.setEnableWhitelist(false);
-                plugin.getLogger().info(Messages.get("log.whitelist.toggle", getSenderName(sender), "off"));
-                sender.sendMessage(Messages.getTextComponent("messages.whitelist.disable"));
+                plugin.getLogger().info(Messages.get("log.whitelist.toggle", getSenderName(source), "off"));
+                source.sendMessage(Messages.getTextComponent("messages.whitelist.disable"));
                 plugin.save();
             } else if (args[1].equalsIgnoreCase("reload")) {
-                if (!sender.hasPermission("buc.whitelist.reload")) {
-                    sender.sendMessage(Messages.getTextComponent("messages.no_permission"));
+                if (!source.hasPermission("buc.whitelist.reload")) {
+                    source.sendMessage(Messages.getTextComponent("messages.no_permission"));
                     return;
                 }
-                plugin.getLogger().info(Messages.get("log.whitelist.reload", getSenderName(sender)));
-                sender.sendMessage(Messages.getTextComponent("messages.whitelist.reload"));
+                plugin.getLogger().info(Messages.get("log.whitelist.reload", getSenderName(source)));
+                source.sendMessage(Messages.getTextComponent("messages.whitelist.reload"));
                 plugin.userList.reloadWhitelist();
             } else if (args[1].equalsIgnoreCase("add") && args.length == 3) {
-                if (!sender.hasPermission("buc.whitelist.add")) {
-                    sender.sendMessage(Messages.getTextComponent("messages.no_permission"));
+                if (!source.hasPermission("buc.whitelist.add")) {
+                    source.sendMessage(Messages.getTextComponent("messages.no_permission"));
                     return;
                 }
                 String name = args[2];
@@ -75,37 +73,37 @@ public class Commands implements Command {
                         public void run() {
                             User user = MojangAPI.getUserByName(name);
                             if (user != null) {
-                                addWhitelist(sender, user.getPlayerUUID(), user.getPlayerName());
+                                addWhitelist(source, user.getPlayerUUID(), user.getPlayerName());
                             } else {
-                                sender.sendMessage(Messages.getTextComponent("messages.player_not_found", name));
+                                source.sendMessage(Messages.getTextComponent("messages.player_not_found", name));
                             }
                         }
                     }.start();
                 } else {
-                    addWhitelist(sender, user.getPlayerUUID(), user.getPlayerName());
+                    addWhitelist(source, user.getPlayerUUID(), user.getPlayerName());
                 }
                 return;
             } else if (args[1].equalsIgnoreCase("remove") && args.length == 3) {
-                if (!sender.hasPermission("buc.whitelist.remove")) {
-                    sender.sendMessage(Messages.getTextComponent("messages.no_permission"));
+                if (!source.hasPermission("buc.whitelist.remove")) {
+                    source.sendMessage(Messages.getTextComponent("messages.no_permission"));
                     return;
                 }
                 String name = args[2];
                 User user = plugin.userList.getUserByName(name);
                 if (user != null && user.isWhitelisted()) {
                     plugin.userList.removeWhitelist(user.getPlayerUUID());
-                    plugin.getLogger().info(Messages.get("log.whitelist.remove", user.getPlayerName(), user.getPlayerUUID(), getSenderName(sender)));
-                    sender.sendMessage(Messages.getTextComponent("messages.whitelist.remove", user.getPlayerName(), user.getPlayerUUID()));
+                    plugin.getLogger().info(Messages.get("log.whitelist.remove", user.getPlayerName(), user.getPlayerUUID(), getSenderName(source)));
+                    source.sendMessage(Messages.getTextComponent("messages.whitelist.remove", user.getPlayerName(), user.getPlayerUUID()));
                     plugin.userList.save();
                 } else {
-                    sender.sendMessage(Messages.getTextComponent("messages.player_not_found", name));
+                    source.sendMessage(Messages.getTextComponent("messages.player_not_found", name));
                 }
             } else {
-                printHelp(sender, args);
+                printHelp(source, args);
             }
         } else if (act.equals("ban") && args.length >= 2) {
-            if (!sender.hasPermission("buc.ban")) {
-                sender.sendMessage(Messages.getTextComponent("messages.no_permission"));
+            if (!source.hasPermission("buc.ban")) {
+                source.sendMessage(Messages.getTextComponent("messages.no_permission"));
                 return;
             }
             String name = args[1];
@@ -117,19 +115,19 @@ public class Commands implements Command {
                     public void run() {
                         User user = MojangAPI.getUserByName(name);
                         if (user != null) {
-                            banPlayer(sender, user.getPlayerUUID(), user.getPlayerName(), reason);
+                            banPlayer(source, user.getPlayerUUID(), user.getPlayerName(), reason);
                         } else {
-                            sender.sendMessage(Messages.getTextComponent("messages.player_not_found", name));
+                            source.sendMessage(Messages.getTextComponent("messages.player_not_found", name));
                         }
                     }
                 }.start();
             } else {
-                banPlayer(sender, user.getPlayerUUID(), user.getPlayerName(), reason);
+                banPlayer(source, user.getPlayerUUID(), user.getPlayerName(), reason);
             }
 
         } else if (act.equals("tempban") && args.length >= 2) {
-            if (!sender.hasPermission("buc.tempban")) {
-                sender.sendMessage(Messages.getTextComponent("messages.no_permission"));
+            if (!source.hasPermission("buc.tempban")) {
+                source.sendMessage(Messages.getTextComponent("messages.no_permission"));
                 return;
             }
             String name = args[1];
@@ -142,19 +140,19 @@ public class Commands implements Command {
                     public void run() {
                         User user = MojangAPI.getUserByName(name);
                         if (user != null) {
-                            tempbanPlayer(sender, user.getPlayerUUID(), user.getPlayerName(), reason, time);
+                            tempbanPlayer(source, user.getPlayerUUID(), user.getPlayerName(), reason, time);
                         } else {
-                            sender.sendMessage(Messages.getTextComponent("messages.player_not_found", name));
+                            source.sendMessage(Messages.getTextComponent("messages.player_not_found", name));
                         }
                     }
                 }.start();
             } else {
-                tempbanPlayer(sender, user.getPlayerUUID(), user.getPlayerName(), reason, time);
+                tempbanPlayer(source, user.getPlayerUUID(), user.getPlayerName(), reason, time);
             }
 
         } else if (act.equals("unban") && args.length >= 2) {
-            if (!sender.hasPermission("buc.unban")) {
-                sender.sendMessage(Messages.getTextComponent("messages.no_permission"));
+            if (!source.hasPermission("buc.unban")) {
+                source.sendMessage(Messages.getTextComponent("messages.no_permission"));
                 return;
             }
             String name = args[1];
@@ -165,32 +163,32 @@ public class Commands implements Command {
                     public void run() {
                         User user = MojangAPI.getUserByName(name);
                         if (user != null) {
-                            unbanPlayer(sender, user.getPlayerUUID(), user.getPlayerName());
+                            unbanPlayer(source, user.getPlayerUUID(), user.getPlayerName());
                         } else {
-                            sender.sendMessage(Messages.getTextComponent("messages.player.not_found", name));
+                            source.sendMessage(Messages.getTextComponent("messages.player.not_found", name));
                         }
                     }
                 }.start();
             } else {
-                unbanPlayer(sender, user.getPlayerUUID(), user.getPlayerName());
+                unbanPlayer(source, user.getPlayerUUID(), user.getPlayerName());
             }
         } else if (act.equals("reload")) {
-            if (!sender.hasPermission("buc.reload")) {
-                sender.sendMessage(Messages.getTextComponent("messages.no_permission"));
+            if (!source.hasPermission("buc.reload")) {
+                source.sendMessage(Messages.getTextComponent("messages.no_permission"));
                 return;
             }
             plugin.reload();
-            plugin.getLogger().info(Messages.get("log.reload", getSenderName(sender)));
-            sender.sendMessage(Messages.getTextComponent("messages.reload"));
+            plugin.getLogger().info(Messages.get("log.reload", getSenderName(source)));
+            source.sendMessage(Messages.getTextComponent("messages.reload"));
         } else {
-            printHelp(sender, args);
+            printHelp(source, args);
         }
     }
 
     public void printHelp(CommandSource sender, String[] args) {
         Optional<PluginContainer> buc = plugin.server.getPluginManager().getPlugin("buc");
         if (buc.isPresent()) {
-            sender.sendMessage(TextComponent.of("--------- buc " + buc.get().getDescription().getVersion().get() + " ---------").color(TextColor.AQUA));
+            sender.sendMessage(Messages.textComponentOf("--------- buc " + buc.get().getDescription().getVersion().get() + " ---------").color(NamedTextColor.AQUA));
         }
         sender.sendMessage(Messages.getTextComponent("command.help.whitelist_toggle", plugin.config.buc_command));
         sender.sendMessage(Messages.getTextComponent("command.help.whitelist_add", plugin.config.buc_command));
@@ -305,7 +303,8 @@ public class Commands implements Command {
     }
 
     @Override
-    public List<String> suggest(@NonNull CommandSource source, String[] currentArgs) {
+    public List<String> suggest(final Invocation invocation) {
+        String[] currentArgs = invocation.arguments();
         List<String> subCommands = Arrays.asList("help", "reload", "whitelist", "ban", "tempban", "unban");
         if (currentArgs.length == 0) {
             return subCommands;

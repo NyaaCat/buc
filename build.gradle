@@ -11,7 +11,7 @@ buildscript {
 }
 
 repositories {
-    jcenter()
+    mavenCentral()
     maven {
         name 'velocity'
         url 'https://nexus.velocitypowered.com/repository/maven-public/'
@@ -27,7 +27,7 @@ if (System.getenv("BUILD_NUMBER") != null) {
 }
 
 dependencies {
-    implement 'com.velocitypowered:velocity-api:3.0.0'
+    implementation 'com.velocitypowered:velocity-api:3.0.0'
     annotationProcessor 'com.velocitypowered:velocity-api:3.0.0'
 }
 

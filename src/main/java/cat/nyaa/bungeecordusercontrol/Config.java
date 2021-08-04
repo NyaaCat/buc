@@ -12,7 +12,7 @@ public class Config {
     public Toml conf;
     public boolean whitelist_enable = true;
     public String buc_command = "buc";
-    private BUC plugin;
+    private final BUC plugin;
 
     public Config(BUC pl) {
         plugin = pl;

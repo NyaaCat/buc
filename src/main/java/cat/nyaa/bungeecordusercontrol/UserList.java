@@ -18,8 +18,8 @@ public class UserList {
     public File userCacheFile;
     public File whitelistFile;
     public File bannedPlayersFile;
-    private BUC plugin;
-    private HashMap<UUID, User> userList = new HashMap<>();
+    private final BUC plugin;
+    private final HashMap<UUID, User> userList = new HashMap<>();
 
     public UserList(BUC pl) {
         plugin = pl;

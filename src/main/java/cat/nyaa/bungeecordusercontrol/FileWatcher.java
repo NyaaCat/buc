@@ -8,7 +8,7 @@ import java.nio.file.WatchService;
 
 public class FileWatcher extends Thread {
 
-    private BUC plugin;
+    private final BUC plugin;
     private WatchService watchService;
 
     public FileWatcher(BUC pl) {

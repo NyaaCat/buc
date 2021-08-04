@@ -1,12 +1,13 @@
 package cat.nyaa.bungeecordusercontrol;
 
 import com.google.inject.Inject;
+import com.velocitypowered.api.command.CommandMeta;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
-import net.kyori.text.Component;
+import net.kyori.adventure.text.Component;
 import org.slf4j.Logger;
 
 import java.io.File;
@@ -48,7 +49,10 @@ public class BUC {
         config.load();
         userList.load();
         server.getEventManager().register(this, new PlayerListener(this));
-        server.getCommandManager().register(new Commands(this), config.buc_command);
+
+        CommandMeta meta = server.getCommandManager().metaBuilder(config.buc_command).build();
+        server.getCommandManager().register(meta,new Commands(this));
+
         userList.save();
         config.save();
         lastReload = System.currentTimeMillis();
@@ -80,7 +84,10 @@ public class BUC {
         Messages.load();
         config.load();
         userList.load();
-        server.getCommandManager().register(new Commands(this), config.buc_command);
+
+        CommandMeta meta = server.getCommandManager().metaBuilder(config.buc_command).build();
+        server.getCommandManager().register(meta,new Commands(this));
+
         reloading = false;
         getLogger().info(Messages.get("messages.reload"));
     }
