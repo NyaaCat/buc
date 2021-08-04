@@ -3,10 +3,10 @@ pipeline {
     stages {
         stage('Build') {
             tools {
-                jdk "jdk11"
+                jdk "jdk16"
             }
             steps {
-                sh 'gradle build'
+                sh './gradlew build'
             }
         }
     }
