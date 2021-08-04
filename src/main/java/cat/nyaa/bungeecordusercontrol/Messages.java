@@ -24,12 +24,12 @@ public class Messages {
     public static String get(String path, Object... args) {
         if (Strings.isNullOrEmpty(local.getString(path))) {
             if (!Strings.isNullOrEmpty(defaultMessage.getString(path))) {
-                return getTextComponent(String.format(defaultMessage.getString(path), args)).content().replaceAll("&","§");
+                return textComponentOf(String.format(defaultMessage.getString(path), args)).content().replaceAll("&","§");
             } else {
                 return "unknown: " + path;
             }
         } else {
-            return getTextComponent(
+            return textComponentOf(
                     String.format(local.getString(path).length() == 0 ? path : local.getString(path), args)).content().replaceAll("&","§");
         }
     }
